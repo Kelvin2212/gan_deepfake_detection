@@ -225,12 +225,14 @@ def prepare_augmentation_param(augmentation, augmentation_param, frame_num, res)
     if augmentation == 'contrast':
         if frame_num == 0:
             if augmentation_param['contrast_value'] == random_setting:
-                augmentation_param['contrast_value'] = get_random_contrast_value()
+                augmentation_param['contrast_value'] = get_random_contrast_value(
+                )
 
     if augmentation == 'brightness':
         if frame_num == 0:
             if augmentation_param['brightness_value'] == random_setting:
-                augmentation_param['brightness_value'] = get_random_contrast_value()
+                augmentation_param['brightness_value'] = get_random_contrast_value(
+                )
 
     if augmentation == 'rotation':
         if frame_num == 0:
@@ -245,16 +247,16 @@ def prepare_augmentation_param(augmentation, augmentation_param, frame_num, res)
     return augmentation_param
 
 
-def apply_augmentation_to_videofile(input_video_filename, output_video_filename, augmentation=None,
-                                    augmentation_param=None, save_intermdt_files=False, test_mode=False):
+def apply_augmentation_to_image(input_image_filename, output_image_filename, augmentation=None,
+                                augmentation_param=None, save_intermdt_files=False, test_mode=False):
     """
-    This is main driver API to apply augmentation to the input video
-    :param input_video_filename: input file
-    :param output_video_filename: output file
+    This is main driver API to apply augmentation to the input image
+    :param input_image_filename: input file
+    :param output_image_filename: output file
     :param augmentation: method of augmentation
     :param augmentation_param: params
     :param save_intermdt_files: save each frames as image
-    :param test_mode: Dont process video, just for testing
+    :param test_mode: Dont process image, just for testing
     :return: updated augmentation_param for logging
     """
     # t = time.time()
@@ -265,48 +267,69 @@ def apply_augmentation_to_videofile(input_video_filename, output_video_filename,
     else:
         raise Exception("Unknown augmentation supplied")
 
-    capture = cv2.VideoCapture(input_video_filename)
-    frames_num = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
-    org_height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    org_width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
+    # capture = cv2.ImageCapture(input_image_filename)
+    # frames_num = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
+    # org_height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    # org_width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
+    # res = (org_width, org_height)
+    # org_fps = int(capture.get(cv2.CAP_PROP_FPS))
+    org_image = cv2.imread(input_image_filename)
+    org_height, org_width, _ = org_image.shape
     res = (org_width, org_height)
-    org_fps = int(capture.get(cv2.CAP_PROP_FPS))
 
     if augmentation_param is None:
         augmentation_param = dict()
     augmentation_param['image_width'] = res[0]
     augmentation_param['image_height'] = res[1]
 
-    out_images_path = os.path.join(os.path.dirname(output_video_filename),
-                                   os.path.splitext(os.path.basename(output_video_filename))[0],
+    out_images_path = os.path.join(os.path.dirname(output_image_filename),
+                                   os.path.splitext(os.path.basename(
+                                       output_image_filename))[0],
                                    )
-    os.makedirs(os.path.dirname(output_video_filename), exist_ok=True)
+    os.makedirs(os.path.dirname(output_image_filename), exist_ok=True)
     if save_intermdt_files:
         os.makedirs(out_images_path, exist_ok=True)
 
-    frames = list()
-    if not test_mode:
-        for i in range(frames_num):
-            capture.grab()
-            success, frame = capture.retrieve()
-            if not success:
-                continue
-            augmentation_param = prepare_augmentation_param(augmentation, augmentation_param, i, res)
-            if augmentation == 'rescale':
-                res = augmentation_param['res']
-            frame = augmentation_func(image=frame, augmentation_param=augmentation_param)
+    if save_intermdt_files:
+        os.makedirs(os.path.dirname(output_image_filename), exist_ok=True)
 
-            if save_intermdt_files:
-                out_image_name = os.path.join(out_images_path, "{}.jpg".format(i))
-                # print(f'saving {out_image_name}')
-                cv2.imwrite(out_image_name, frame, [cv2.IMWRITE_JPEG_QUALITY, 100])
+    augmentation_param = prepare_augmentation_param(
+        augmentation, augmentation_param, 0, res)
+    frame = augmentation_func(
+        image=frame, augmentation_param=augmentation_param)
 
-            frames.append(frame)
+    if save_intermdt_files:
+        out_image_name = os.path.join(output_image_filename)
+        cv2.imwrite(out_image_name, frame, [cv2.IMWRITE_JPEG_QUALITY, 100])
 
-        create_video_from_images(frames, output_video_filename, fps=org_fps, res=res)
+    # frames = list()
+    # if not test_mode:
+    #     for i in range(frames_num):
+    #         capture.grab()
+    #         success, frame = capture.retrieve()
+    #         if not success:
+    #             continue
+    #         augmentation_param = prepare_augmentation_param(
+    #             augmentation, augmentation_param, i, res)
+    #         if augmentation == 'rescale':
+    #             res = augmentation_param['res']
+    #         frame = augmentation_func(
+    #             image=frame, augmentation_param=augmentation_param)
+
+    #         if save_intermdt_files:
+    #             out_image_name = os.path.join(
+    #                 out_images_path, "{}.jpg".format(i))
+    #             # print(f'saving {out_image_name}')
+    #             cv2.imwrite(out_image_name, frame, [
+    #                         cv2.IMWRITE_JPEG_QUALITY, 100])
+
+    #         frames.append(frame)
+
+    #     create_image_from_images(
+    #         frames, output_image_filename, fps=org_fps, res=res)
     # print('Done in', (time.time() - t))
-    # print(output_video_filename)
-    augmentation_param['input_file'] = input_video_filename
-    augmentation_param['out_file'] = output_video_filename
+    # print(output_image_filename)
+    augmentation_param['input_file'] = input_image_filename
+    augmentation_param['out_file'] = output_image_filename
     augmentation_param['augmentation'] = augmentation
     return augmentation_param

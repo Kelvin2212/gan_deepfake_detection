@@ -9,10 +9,10 @@ import traceback
 import sys
 
 
-def test_data_augmentation(input_file, output_folder):
+def test_data_augmentation_and_distraction_to_image(input_file, output_folder):
     """
     Test all kinds of data augmentation. Applies supported augmentation to input_file
-    and save individual output videos in output_folder
+    and save individual output image in output_folder
     :param input_file:
     :param output_folder:
     :return:
@@ -22,9 +22,11 @@ def test_data_augmentation(input_file, output_folder):
     augmentation_methods = augmentation.get_supported_augmentation_methods()
     if 'noise' in augmentation_methods:
         augmentation_methods.remove('noise')
-    augmentation_param = [augmentation.get_augmentation_setting_by_type(m) for m in augmentation_methods]
+    augmentation_param = [augmentation.get_augmentation_setting_by_type(
+        m) for m in augmentation_methods]
     noise_methods = augmentation.get_supported_noise_types()
-    noise_methods_param = [augmentation.get_noise_param_setting(m) for m in noise_methods]
+    noise_methods_param = [
+        augmentation.get_noise_param_setting(m) for m in noise_methods]
     augmentation_methods.extend(['noise'] * len(noise_methods))
     augmentation_param.extend(noise_methods_param)
 
@@ -37,14 +39,15 @@ def test_data_augmentation(input_file, output_folder):
         for aug in augmentation_plan:
             aug_func, aug_param = aug
             if aug_func == 'noise':
-                suffix = out_id + '_' + aug_func + '_' + aug_param['noise_type']
+                suffix = out_id + '_' + aug_func + \
+                    '_' + aug_param['noise_type']
             else:
                 suffix = out_id + '_' + aug_func
-            outfile = os.path.join(output_folder, suffix + '.mp4')
-            jobs.append(pool.apply_async(augmentation.apply_augmentation_to_videofile,
-                                         (input_file, outfile,),
-                                         dict(augmentation=aug_func, augmentation_param=aug_param,
-                                              save_intermdt_files=True)
+            # Save as JPEG image
+            outfile = os.path.join(output_folder, suffix + '.jpg')
+
+            jobs.append(pool.apply_async(apply_augmentation_to_imagefile,
+                                         (input_file, outfile, aug_func, aug_param)
                                          )
                         )
 
@@ -55,7 +58,7 @@ def test_data_augmentation(input_file, output_folder):
 def test_data_distraction(input_file, output_folder):
     """
     Test all kinds of data distraction. Applies supported distraction to input_file
-    and save individual output videos in output_folder
+    and save individual output images in output_folder
     :param input_file:
     :param output_folder:
     :return:
@@ -63,7 +66,8 @@ def test_data_distraction(input_file, output_folder):
     os.makedirs(output_folder, exist_ok=True)
 
     distraction_methods = distractions.get_supported_distraction_methods()
-    distraction_params = [distractions.get_distractor_setting_by_type(m) for m in distraction_methods]
+    distraction_params = [distractions.get_distractor_setting_by_type(
+        m) for m in distraction_methods]
     distraction_plan = list(zip(distraction_methods, distraction_params))
     out_id = os.path.splitext(os.path.basename(input_file))[0]
 
@@ -72,11 +76,11 @@ def test_data_distraction(input_file, output_folder):
         results = []
         for distract in distraction_plan:
             distract_func, distract_param = distract
-            outfile = os.path.join(output_folder, out_id + '_' + distract_func + '.mp4')
-            jobs.append(pool.apply_async(distractions.apply_distraction_to_videofile,
-                                         (input_file, outfile,),
-                                         dict(distraction=distract_func, distraction_param=distract_param,
-                                              save_intermdt_files=True)
+            outfile = os.path.join(
+                output_folder, out_id + '_' + distract_func + '.jpg')
+            jobs.append(pool.apply_async(apply_distraction_to_imagefile,
+                                         (input_file, outfile,
+                                          distract_func, distract_param)
                                          ))
 
         for job in tqdm(jobs, desc="Applying distraction"):
@@ -88,7 +92,7 @@ def test_data_distraction(input_file, output_folder):
 def generate_data_augmentation_plan(root_dir=None, plan_pkl_file=None):
     # Apply various kinds of data augmentation to 30 % of whole training set.
     # Sample without replacement in this case and each below case.
-    # Form these randomly selected video files,
+    # Form these randomly selected image files,
     #
     # apply distractions to 35% of files
     # distractions and random noise to 35%
@@ -98,7 +102,7 @@ def generate_data_augmentation_plan(root_dir=None, plan_pkl_file=None):
     # augmentation to 5%
     #
 
-    results = get_dfdc_training_video_filepaths(root_dir=root_dir)
+    results = get_dfdc_training_image_filepaths(root_dir=root_dir)
     polulation_size = len(results)
     random.shuffle(results)
 
@@ -165,7 +169,8 @@ def generate_data_augmentation_plan(root_dir=None, plan_pkl_file=None):
         noise_type = augmentation.get_random_noise_type()
         noise_param = augmentation.get_noise_param_setting(noise_type)
         plan.append({'augmentation': ('noise', noise_param)})
-        plan.append({'augmentation': augmentation.get_random_augmentation(avoid_noise=True)})
+        plan.append(
+            {'augmentation': augmentation.get_random_augmentation(avoid_noise=True)})
         entry = i, plan
         dist_noise_aug_exec_plan.append(entry)
     # pprint(dist_noise_aug_exec_plan)
@@ -183,7 +188,8 @@ def generate_data_augmentation_plan(root_dir=None, plan_pkl_file=None):
     aug_noise_samples_exec_plan = []
     for i in aug_noise_samples:
         plan = list()
-        plan.append({'augmentation': augmentation.get_random_augmentation(avoid_noise=True)})
+        plan.append(
+            {'augmentation': augmentation.get_random_augmentation(avoid_noise=True)})
         noise_type = augmentation.get_random_noise_type()
         noise_param = augmentation.get_noise_param_setting(noise_type)
         plan.append({'augmentation': ('noise', noise_param)})
@@ -194,7 +200,8 @@ def generate_data_augmentation_plan(root_dir=None, plan_pkl_file=None):
     aug_samples_exec_plan = []
     for i in aug_samples:
         plan = list()
-        plan.append({'augmentation': augmentation.get_random_augmentation(avoid_noise=True)})
+        plan.append(
+            {'augmentation': augmentation.get_random_augmentation(avoid_noise=True)})
         entry = i, plan
         aug_samples_exec_plan.append(entry)
     # pprint(aug_samples_exec_plan)
@@ -251,16 +258,18 @@ def execute_data_augmentation_plan(data_augmentation_plan_filename, metadata_fol
                         continue
                     if 'augmentation' in p.keys():
                         distr = p['augmentation']
-                        jobs.append(pool.apply_async(augmentation.apply_augmentation_to_videofile,
+                        jobs.append(pool.apply_async(augmentation.apply_augmentation_to_imagefile,
                                                      (filename, filename,),
-                                                     dict(augmentation=distr[0], augmentation_param=distr[1])
+                                                     dict(
+                                                         augmentation=distr[0], augmentation_param=distr[1])
                                                      )
                                     )
                     elif 'distraction' in p.keys():
                         distr = p['distraction']
-                        jobs.append(pool.apply_async(distractions.apply_distraction_to_videofile,
+                        jobs.append(pool.apply_async(distractions.apply_distraction_to_imagefile,
                                                      (filename, filename,),
-                                                     dict(distraction=distr[0], distraction_param=distr[1])
+                                                     dict(
+                                                         distraction=distr[0], distraction_param=distr[1])
                                                      ))
 
         for job in tqdm(jobs, desc="Executing data augmentation plan"):
@@ -268,8 +277,10 @@ def execute_data_augmentation_plan(data_augmentation_plan_filename, metadata_fol
             try:
                 df = pd.Series(r).reset_index().set_index('index')
                 rfilename = os.path.basename(r['input_file']) + \
-                            '_' + str(datetime.now().strftime("%d-%b-%Y_%H_%M_%S")) + '.csv'
-                df.to_csv(os.path.join(metadata_folder, rfilename), header=False)
+                    '_' + \
+                    str(datetime.now().strftime("%d-%b-%Y_%H_%M_%S")) + '.csv'
+                df.to_csv(os.path.join(
+                    metadata_folder, rfilename), header=False)
             except Exception as e:
                 print_line()
                 print('Got exception')
@@ -289,18 +300,23 @@ def main():
     if args.apply_aug_to_sample:
         # sample_test_file = os.path.join('dfdc_train_part_30', 'ajxcpxpmof.mp4')
         # sample_test_file = os.path.join(ConfigParser.getInstance().get_dfdc_train_data_path(), sample_test_file)
-        sample_test_file = '4000.mp4'
-        print(f'Applying augmentation and distraction to sample file {sample_test_file}')
+        sample_test_file = '4000.jpg'
+        print(
+            f'Applying augmentation and distraction to sample file {sample_test_file}')
         out_root = ConfigParser.getInstance().get_assets_path()
         aug_output_folder = os.path.join(out_root, 'sample_augmentation')
         print(f'aug_output_folder: {aug_output_folder}')
         print(f'Sample file: {sample_test_file}')
 
         os.makedirs(aug_output_folder, exist_ok=True)
-        shutil.copy(sample_test_file, os.path.join(aug_output_folder, os.path.basename(sample_test_file)))
+        shutil.copy(sample_test_file, os.path.join(
+            aug_output_folder, os.path.basename(sample_test_file)))
 
-        test_data_augmentation(sample_test_file, aug_output_folder)
-        test_data_distraction(sample_test_file, aug_output_folder)
+        apply_augmentation_and_distraction_to_image(
+            sample_test_file, aug_output_folder)
+
+        # test_data_augmentation(sample_test_file, aug_output_folder)
+        # test_data_distraction(sample_test_file, aug_output_folder)
 
     if args.gen_aug_plan:
         print('Generating augmentation plan')

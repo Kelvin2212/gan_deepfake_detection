@@ -69,13 +69,13 @@ def print_batch_item(index, item, all_frames=False, simple=True):
             return
         else:
             v_ids, frames, labels = item
-            print(f'{index} | {v_ids} |frames={len(frames)}, shape={frames[0].shape} | {labels}')
+            print(
+                f'{index} | {v_ids} |frames={len(frames)}, shape={frames[0].shape} | {labels}')
             print_line()
             print(frames[0])
             print_line()
 
         print_line()
-
 
     else:
         print_line()
@@ -143,21 +143,31 @@ def save_model_results_to_log(epoch=0, model=None, model_params=None, losses=Non
     model_log_dir = os.path.join(log_dir_kind, model_name, report_type)
     os.makedirs(model_log_dir, exist_ok=True)
     model_log_file = os.path.join(model_log_dir, log_params['model_info_log'])
-    model_train_losses_log_file = os.path.join(model_log_dir, log_params['model_loss_info_log'])
-    model_train_accuracy_log_file = os.path.join(model_log_dir, log_params['model_acc_info_log'])
-    model_conf_mat_csv = os.path.join(model_log_dir, log_params['model_conf_matrix_csv'])
-    model_conf_mat_png = os.path.join(model_log_dir, log_params['model_conf_matrix_png'])
-    model_conf_mat_normalized_csv = os.path.join(model_log_dir, log_params['model_conf_matrix_normalized_csv'])
-    model_conf_mat_normalized_png = os.path.join(model_log_dir, log_params['model_conf_matrix_normalized_png'])
+    model_train_losses_log_file = os.path.join(
+        model_log_dir, log_params['model_loss_info_log'])
+    model_train_accuracy_log_file = os.path.join(
+        model_log_dir, log_params['model_acc_info_log'])
+    model_conf_mat_csv = os.path.join(
+        model_log_dir, log_params['model_conf_matrix_csv'])
+    model_conf_mat_png = os.path.join(
+        model_log_dir, log_params['model_conf_matrix_png'])
+    model_conf_mat_normalized_csv = os.path.join(
+        model_log_dir, log_params['model_conf_matrix_normalized_csv'])
+    model_conf_mat_normalized_png = os.path.join(
+        model_log_dir, log_params['model_conf_matrix_normalized_png'])
     model_loss_png = os.path.join(model_log_dir, log_params['model_loss_png'])
-    model_accuracy_png = os.path.join(model_log_dir, log_params['model_accuracy_png'])
-    all_samples_pred_csv = os.path.join(model_log_dir, log_params['all_samples_pred_csv'])
+    model_accuracy_png = os.path.join(
+        model_log_dir, log_params['model_accuracy_png'])
+    all_samples_pred_csv = os.path.join(
+        model_log_dir, log_params['all_samples_pred_csv'])
     model_roc_png = os.path.join(model_log_dir, log_params['model_roc_png'])
 
     report = None
     if predicted is not None:
-        df = pd.DataFrame([sample_names, ground_truth, predicted, probabilities]).T
-        df.columns = ['sample_name', 'ground_truth', 'predictions', 'probability']
+        df = pd.DataFrame([sample_names, ground_truth,
+                          predicted, probabilities]).T
+        df.columns = ['sample_name', 'ground_truth',
+                      'predictions', 'probability']
         df = df.set_index(['sample_name'])
         df.to_csv(all_samples_pred_csv)
 
@@ -185,7 +195,8 @@ def save_model_results_to_log(epoch=0, model=None, model_params=None, losses=Non
         plt.savefig(model_conf_mat_png)
         plt.close(fig)
 
-        cm = metrics.confusion_matrix(ground_truth, predicted, normalize='true')
+        cm = metrics.confusion_matrix(
+            ground_truth, predicted, normalize='true')
         df_confusion = pd.DataFrame(cm)
         df_confusion.index = target_class_names
         df_confusion.columns = target_class_names
@@ -199,7 +210,8 @@ def save_model_results_to_log(epoch=0, model=None, model_params=None, losses=Non
         plt.savefig(model_conf_mat_normalized_png)
         plt.close(fig)
 
-        report = metrics.classification_report(ground_truth, predicted, target_names=list(target_class_names))
+        report = metrics.classification_report(
+            ground_truth, predicted, target_names=list(target_class_names))
         gen_roc(ground_truth, probabilities, model_roc_png)
 
     if losses is not None:
@@ -258,7 +270,8 @@ def save_model_results_to_log(epoch=0, model=None, model_params=None, losses=Non
             file.write('-' * log_params['line_len'] + '\n')
             file.write(report + '\n')
             file.write('-' * log_params['line_len'] + '\n')
-            file.write("roc_auc_score = {}\n".format(roc_auc_score(ground_truth, probabilities)))
+            file.write("roc_auc_score = {}\n".format(
+                roc_auc_score(ground_truth, probabilities)))
             file.write('-' * log_params['line_len'] + '\n')
 
         if report_type == 'Test':
@@ -307,11 +320,12 @@ def save_all_model_results(model=None, model_params=None, train_losses=None, tra
                     amp_dict=amp_dict)
 
 
-def get_per_video_stat(df, vid, prob_threshold_fake, prob_threshold_real):
+def get_per_image_stat(df, img, prob_threshold_fake, prob_threshold_real):
     # number of frames detected as fake with at-least prob of prob_threshold
-    df1 = df.loc[df['video'] == vid]
+    df1 = df.loc[df['image'] == img]
     fake_frames_prob = df1[df1['predictions'] == 1]['norm_probability'].values
-    fake_frames_high_prob = fake_frames_prob[np.array(fake_frames_prob > prob_threshold_fake)]
+    fake_frames_high_prob = fake_frames_prob[np.array(
+        fake_frames_prob > prob_threshold_fake)]
     num_fake_frames = len(fake_frames_high_prob)
     if num_fake_frames == 0:
         fake_prob = 0
@@ -319,7 +333,8 @@ def get_per_video_stat(df, vid, prob_threshold_fake, prob_threshold_real):
         fake_prob = sum(fake_frames_high_prob) / num_fake_frames
 
     real_frames_prob = df1[df1['predictions'] == 0]['norm_probability'].values
-    real_frames_high_prob = real_frames_prob[np.array(real_frames_prob > prob_threshold_real)]
+    real_frames_high_prob = real_frames_prob[np.array(
+        real_frames_prob > prob_threshold_real)]
     num_real_frames = len(real_frames_high_prob)
     if num_real_frames == 0:
         real_prob = 0
@@ -332,7 +347,7 @@ def get_per_video_stat(df, vid, prob_threshold_fake, prob_threshold_real):
     return num_fake_frames, fake_prob, num_real_frames, total_number_frames, ground_truth
 
 
-def split_video(val):
+def split_image(val):
     return val.split('__')[0]
 
 
@@ -388,19 +403,22 @@ def gen_report_for_per_frame_model(per_frame_csv=None, log_dir=None, report_type
         return
     df = pd.read_csv(per_frame_csv)
 
-    df['video'] = df['sample_name'].apply(split_video)
+    df['image'] = df['sample_name'].apply(split_image)
     df['frames'] = df['sample_name'].apply(split_frames)
-    df['norm_probability'] = df.apply(lambda x: norm_probability(x.predictions, x.probability), axis=1)
-    all_videos = set(df['video'].values)
+    df['norm_probability'] = df.apply(
+        lambda x: norm_probability(x.predictions, x.probability), axis=1)
+    all_image = set(df['image'].values)
 
     final_df = pd.DataFrame(
-        columns=['video', 'num_fake_frames', 'num_real_frames', 'total_number_frames', 'ground_truth'])
+        columns=['image', 'num_fake_frames', 'num_real_frames', 'total_number_frames', 'ground_truth'])
 
-    for v in all_videos:
+    for v in all_image:
         num_fake_frames, fake_prob, num_real_frames, total_number_frames, \
-        ground_truth = get_per_video_stat(df, v, prob_threshold_fake, prob_threshold_real)
-        prediction = pred_strategy(num_fake_frames, num_real_frames, total_number_frames, fake_fraction=fake_fraction)
-        final_df = final_df.append({'video': v, 'num_fake_frames': num_fake_frames,
+            ground_truth = get_per_image_stat(
+                df, v, prob_threshold_fake, prob_threshold_real)
+        prediction = pred_strategy(
+            num_fake_frames, num_real_frames, total_number_frames, fake_fraction=fake_fraction)
+        final_df = final_df.append({'image': v, 'num_fake_frames': num_fake_frames,
                                     'num_real_frames': num_real_frames, 'total_number_frames': total_number_frames,
                                     'ground_truth': ground_truth, 'prediction': prediction, 'fake_prob': fake_prob},
                                    ignore_index=True)
@@ -410,15 +428,21 @@ def gen_report_for_per_frame_model(per_frame_csv=None, log_dir=None, report_type
     model_sub_dir = 'video_classi_' + str(prob_threshold_fake) + '_' + \
                     str(prob_threshold_real) + '_' + str(fake_fraction)
 
-    model_log_dir = os.path.join(log_dir, log_kind, model_params['model_name'], report_type, model_sub_dir)
+    model_log_dir = os.path.join(
+        log_dir, log_kind, model_params['model_name'], report_type, model_sub_dir)
     os.makedirs(model_log_dir, exist_ok=True)
 
-    model_conf_mat_csv = os.path.join(model_log_dir, log_params['model_conf_matrix_csv'])
-    model_conf_mat_png = os.path.join(model_log_dir, log_params['model_conf_matrix_png'])
-    model_conf_mat_normalized_csv = os.path.join(model_log_dir, log_params['model_conf_matrix_normalized_csv'])
-    model_conf_mat_normalized_png = os.path.join(model_log_dir, log_params['model_conf_matrix_normalized_png'])
+    model_conf_mat_csv = os.path.join(
+        model_log_dir, log_params['model_conf_matrix_csv'])
+    model_conf_mat_png = os.path.join(
+        model_log_dir, log_params['model_conf_matrix_png'])
+    model_conf_mat_normalized_csv = os.path.join(
+        model_log_dir, log_params['model_conf_matrix_normalized_csv'])
+    model_conf_mat_normalized_png = os.path.join(
+        model_log_dir, log_params['model_conf_matrix_normalized_png'])
     model_roc_png = os.path.join(model_log_dir, log_params['model_roc_png'])
-    all_samples_pred_csv = os.path.join(model_log_dir, log_params['all_samples_pred_csv'])
+    all_samples_pred_csv = os.path.join(
+        model_log_dir, log_params['all_samples_pred_csv'])
     model_log_file = os.path.join(model_log_dir, log_params['model_info_log'])
 
     final_df = final_df.set_index(['video'])
@@ -430,7 +454,8 @@ def gen_report_for_per_frame_model(per_frame_csv=None, log_dir=None, report_type
     cmap = plt.cm.Blues
     class_names = ['Real', 'Fake']
 
-    cm = metrics.confusion_matrix(final_df['ground_truth'], final_df['prediction'])
+    cm = metrics.confusion_matrix(
+        final_df['ground_truth'], final_df['prediction'])
     target_class_names = class_names
 
     df_confusion = pd.DataFrame(cm)
@@ -446,7 +471,8 @@ def gen_report_for_per_frame_model(per_frame_csv=None, log_dir=None, report_type
     plt.savefig(model_conf_mat_png)
     plt.close(fig)
 
-    cm = metrics.confusion_matrix(final_df['ground_truth'], final_df['prediction'], normalize='true')
+    cm = metrics.confusion_matrix(
+        final_df['ground_truth'], final_df['prediction'], normalize='true')
     df_confusion = pd.DataFrame(cm)
     df_confusion.index = target_class_names
     df_confusion.columns = target_class_names
@@ -476,7 +502,8 @@ def gen_report_for_per_frame_model(per_frame_csv=None, log_dir=None, report_type
             file.write('-' * log_params['line_len'] + '\n')
             file.write(report + '\n')
             file.write('-' * log_params['line_len'] + '\n')
-            file.write("roc_auc_score = {}\n".format(roc_auc_score(ground_truth, probability)))
+            file.write("roc_auc_score = {}\n".format(
+                roc_auc_score(ground_truth, probability)))
             file.write('-' * log_params['line_len'] + '\n')
             file.write(misc)
             file.write('-' * log_params['line_len'] + '\n')
@@ -484,15 +511,17 @@ def gen_report_for_per_frame_model(per_frame_csv=None, log_dir=None, report_type
 
 
 def get_classificiton_report_simple(prob_threshold_fake=None, prob_threshold_real=None, fake_fraction=None,
-                                    all_videos=None,
+                                    all_image=None,
                                     df=None):
     # print(f'processing for prob_threshold_fake={prob_threshold_fake}, fake_fraction={fake_fraction}')
     final_df = pd.DataFrame(
-        columns=['video', 'num_fake_frames', 'num_real_frames', 'total_number_frames', 'ground_truth'])
-    for v in all_videos:
+        columns=['image', 'num_fake_frames', 'num_real_frames', 'total_number_frames', 'ground_truth'])
+    for v in all_image:
         num_fake_frames, fake_prob, num_real_frames, total_number_frames, \
-        ground_truth = get_per_video_stat(df, v, prob_threshold_fake, prob_threshold_real)
-        prediction = pred_strategy(num_fake_frames, num_real_frames, total_number_frames, fake_fraction=fake_fraction)
+            ground_truth = get_per_video_stat(
+                df, v, prob_threshold_fake, prob_threshold_real)
+        prediction = pred_strategy(
+            num_fake_frames, num_real_frames, total_number_frames, fake_fraction=fake_fraction)
         final_df = final_df.append({'video': v, 'num_fake_frames': num_fake_frames,
                                     'num_real_frames': num_real_frames, 'total_number_frames': total_number_frames,
                                     'ground_truth': ground_truth, 'prediction': prediction, 'fake_prob': fake_prob},
@@ -514,8 +543,9 @@ def grid_search_for_per_frame_model(per_frame_csv=None, log_dir=None, report_typ
 
     df['video'] = df['sample_name'].apply(split_video)
     df['frames'] = df['sample_name'].apply(split_frames)
-    df['norm_probability'] = df.apply(lambda x: norm_probability(x.predictions, x.probability), axis=1)
-    all_videos = set(df['video'].values)
+    df['norm_probability'] = df.apply(
+        lambda x: norm_probability(x.predictions, x.probability), axis=1)
+    all_image = set(df['video'].values)
 
     prob_threshold_fake_range = [0.50, 0.55, 0.60, 0.70, 0.80, 0.90]
     prob_threshold_real = 0.55  # unused
@@ -531,7 +561,8 @@ def grid_search_for_per_frame_model(per_frame_csv=None, log_dir=None, report_typ
         for prob_threshold_fake in prob_threshold_fake_range:
             for fake_fraction in fake_fraction_range:
                 jobs.append(pool.apply_async(get_classificiton_report_simple,
-                                             (prob_threshold_fake, prob_threshold_real, fake_fraction, all_videos, df,),
+                                             (prob_threshold_fake, prob_threshold_real,
+                                              fake_fraction, all_image, df,),
                                              )
                             )
 
@@ -554,7 +585,8 @@ def grid_search_for_per_frame_model(per_frame_csv=None, log_dir=None, report_typ
         f"top_gs best param: prob_threshold_fake {prob_threshold_fake_best}, fake_fraction_best {fake_fraction_best}, accuracy_best {accuracy_best}")
 
     model_sub_dir = 'grid_search'
-    model_log_dir = os.path.join(log_dir, log_kind, model_params['model_name'], report_type, model_sub_dir)
+    model_log_dir = os.path.join(
+        log_dir, log_kind, model_params['model_name'], report_type, model_sub_dir)
     os.makedirs(model_log_dir, exist_ok=True)
     grid_search_df_path = os.path.join(model_log_dir, 'grid_search_df.csv')
 

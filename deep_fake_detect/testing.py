@@ -44,7 +44,8 @@ def test_model(model, model_params, criterion, log_dir, model_kind):
 
     tqdm_test_descr_format = "Testing [Acc={:02.4f}% |Loss Total={:.8f}, Fake={:.8f}, Real={:.8f}]"
 
-    tqdm_test_descr = tqdm_test_descr_format.format(0, float('inf'), float('inf'), float('inf'))
+    tqdm_test_descr = tqdm_test_descr_format.format(
+        0, float('inf'), float('inf'), float('inf'))
     tqdm_test_obj = tqdm(test_loader, desc=tqdm_test_descr)
 
     losses = []
@@ -75,7 +76,7 @@ def test_model(model, model_params, criterion, log_dir, model_kind):
                 labels = samples['label'].to(device).unsqueeze(1)
                 batch_size = labels.shape[0]
                 for i in range(batch_size):
-                    all_filenames.append(str(samples['video_id'][i]) + '__' +
+                    all_filenames.append(str(samples['image_id'][i]) + '__' +
                                          str(samples['frame'][i]))
             else:
                 raise Exception("model_params['batch_format'] not supported")
@@ -98,7 +99,8 @@ def test_model(model, model_params, criterion, log_dir, model_kind):
             fake_loss_val = 0 if fake_loss == 0 else fake_loss.item()
 
             predicted = get_predictions(output).to('cpu').detach().numpy()
-            class_probability = get_probability(output).to('cpu').detach().numpy()
+            class_probability = get_probability(
+                output).to('cpu').detach().numpy()
 
             labels = labels.to('cpu').detach().numpy()
             batch_corr = (predicted == labels).sum().item()

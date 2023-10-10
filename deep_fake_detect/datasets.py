@@ -13,7 +13,8 @@ class DFDCDatasetSimple(Dataset):
     def __init__(self, mode=None, transform=None, data_size=1, dataset=None, label_smoothing=0):
         super().__init__()
         self.mode = mode
-        self.label_smoothing = 0  # use only in training, so update to param passed in train mode
+        # use only in training, so update to param passed in train mode
+        self.label_smoothing = 0
         if mode == 'train':
             if dataset == 'plain':
                 self.labels_csv = ConfigParser.getInstance().get_dfdc_train_frame_label_csv_path()
@@ -58,16 +59,37 @@ class DFDCDatasetSimple(Dataset):
     def __len__(self) -> int:
         return self.data_len
 
+    # def __getitem__(self, index: int):
+    #     while True:
+    #         try:
+    #             item = self.data_dict[index].copy()
+    #             frame = Image.open(os.path.join(self.crops_dir, str(item['video_id']), item['frame']))
+    #             if self.transform is not None:
+    #                 frame = self.transform(frame)
+    #             item['frame_tensor'] = frame
+    #             if self.label_smoothing != 0:
+    #                 label = np.clip(item['label'], self.label_smoothing, 1 - self.label_smoothing)
+    #             else:
+    #                 label = item['label']
+    #             item['label'] = torch.tensor(label)
+    #             return item
+    #         except Exception as e:
+    #             # print(f"bad {os.path.join(self.crops_dir, str(item['video_id']), item['frame'])}")
+    #             index = random.randint(0, self.data_len)
+
     def __getitem__(self, index: int):
         while True:
             try:
                 item = self.data_dict[index].copy()
-                frame = Image.open(os.path.join(self.crops_dir, str(item['video_id']), item['frame']))
+                image_id = item['image_id']
+                image_path = os.path.join(self.crops_dir, str(image_id))
+                frame = Image.open(os.path.join(image_path, image_id))
                 if self.transform is not None:
                     frame = self.transform(frame)
                 item['frame_tensor'] = frame
                 if self.label_smoothing != 0:
-                    label = np.clip(item['label'], self.label_smoothing, 1 - self.label_smoothing)
+                    label = np.clip(
+                        item['label'], self.label_smoothing, 1 - self.label_smoothing)
                 else:
                     label = item['label']
                 item['label'] = torch.tensor(label)
@@ -75,5 +97,3 @@ class DFDCDatasetSimple(Dataset):
             except Exception as e:
                 # print(f"bad {os.path.join(self.crops_dir, str(item['video_id']), item['frame'])}")
                 index = random.randint(0, self.data_len)
-
-

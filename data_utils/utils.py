@@ -5,21 +5,23 @@ from utils import *
 import pandas as pd
 
 
-def create_video_from_images(images, output_video_filename, fps=30, res=(1920, 1080)):
-    # video = cv2.VideoWriter(output_video_filename, cv2.VideoWriter_fourcc('H', '2', '6', '4'), fps, res)
-    video = cv2.VideoWriter(output_video_filename, cv2.VideoWriter_fourcc(*"mp4v"), fps, res)
-    for image in images:
-        video.write(image)
-    video.release()
+# def create_video_from_images(images, output_video_filename, fps=30, res=(1920, 1080)):
+#     # video = cv2.VideoWriter(output_video_filename, cv2.VideoWriter_fourcc('H', '2', '6', '4'), fps, res)
+#     video = cv2.VideoWriter(output_video_filename, cv2.VideoWriter_fourcc(*"mp4v"), fps, res)
+#     for image in images:
+#         video.write(image)
+#     video.release()
 
 
-def extract_images_from_video(input_video_filename, output_folder, res=None):
+def extract_images_from_video(input_video_filename, output_folder, frame_hops=1, res=None):
     os.makedirs(output_folder, exist_ok=True)
     capture = cv2.VideoCapture(input_video_filename)
     frames_num = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
 
     for i in range(frames_num):
         capture.grab()
+        if i % frame_hops != 0:
+            continue
         success, frame = capture.retrieve()
         if not success:
             continue
@@ -46,38 +48,55 @@ def get_dfdc_training_real_fake_pairs(root_dir):
         for k, v in metadata.items():
             original = v.get("original", None)
             if v["label"] == "FAKE":
-                pairs.append((os.path.splitext(original)[0], os.path.splitext(k)[0]))
+                original = os.path.splitext(
+                    original)[0] if original is not None else None
+                k = os.path.splitext(k)[0]
+                pairs.append((original, k))
 
     return pairs
 
 
-def get_dfdc_training_video_filepaths(root_dir):
-    video_filepaths = []
+# def get_dfdc_training_video_filepaths(root_dir):
+#     video_filepaths = []
+#     for json_path in glob(os.path.join(root_dir, "*/metadata.json")):
+#         pdir = Path(json_path).parent
+#         with open(json_path, "r") as f:
+#             metadata = json.load(f)
+#         for k, v in metadata.items():
+#             full_path = os.path.join(pdir, k)
+#             video_filepaths.append(full_path)
+
+#     return video_filepaths
+
+def get_dfdc_training_image_filepaths(root_dir):
+    image_filepaths = []
     for json_path in glob(os.path.join(root_dir, "*/metadata.json")):
         pdir = Path(json_path).parent
         with open(json_path, "r") as f:
             metadata = json.load(f)
         for k, v in metadata.items():
-            full_path = os.path.join(pdir, k)
-            video_filepaths.append(full_path)
+            if v["label"] == "FAKE":
+                full_path = os.path.join(pdir, os.path.splitext(k)[0] + '.jpg')
+                image_filepaths.append(full_path)
 
-    return video_filepaths
+    return image_filepaths
 
 
-
-
-def get_training_reals_and_fakes():
+def get_training_image_reals_and_fakes():
     root_dir = ConfigParser.getInstance().get_dfdc_train_data_path()
     originals = []
     fakes = []
     for json_path in glob(os.path.join(root_dir, "*/metadata.json")):
+        pdir = Path(json_path).parent
         with open(json_path, "r") as f:
             metadata = json.load(f)
         for k, v in metadata.items():
             if v["label"] == "FAKE":
-                fakes.append(k)
+                fakes.append(os.path.join(
+                    pdir, os.path.splitext(k)[0] + '.jpg'))
             else:
-                originals.append(k)
+                originals.append(os.path.join(
+                    pdir, os.path.splitext(k)[0] + '.jpg'))
 
     return originals, fakes
 
@@ -100,7 +119,24 @@ def get_test_reals_and_fakes():
     return originals, fakes
 
 
-def get_video_frame_labels_mapping(cid, originals, fakes):
+# def get_video_frame_labels_mapping(cid, originals, fakes):
+#     cid_ = os.path.basename(cid)
+#     if cid_ in originals:
+#         crop_label = 0
+#     elif cid_ in fakes:
+#         crop_label = 1
+#     else:
+#         raise Exception('Unknown label')
+#     crop_items = glob(cid + '/*')
+#     df = pd.DataFrame(columns=['video_id', 'frame', 'label'])
+#     for crp_itm in crop_items:
+#         crp_itm_ = os.path.basename(crp_itm)
+#         new_row = {'video_id': cid_, 'frame': crp_itm_, 'label': crop_label}
+#         df = df.append(new_row, ignore_index=True)
+
+#     return df
+
+def get_image_frame_labels_mapping(cid, originals, fakes):
     cid_ = os.path.basename(cid)
     if cid_ in originals:
         crop_label = 0
@@ -109,10 +145,10 @@ def get_video_frame_labels_mapping(cid, originals, fakes):
     else:
         raise Exception('Unknown label')
     crop_items = glob(cid + '/*')
-    df = pd.DataFrame(columns=['video_id', 'frame', 'label'])
+    df = pd.DataFrame(columns=['image_id', 'label'])
     for crp_itm in crop_items:
         crp_itm_ = os.path.basename(crp_itm)
-        new_row = {'video_id': cid_, 'frame': crp_itm_, 'label': crop_label}
+        new_row = {'image_id': crp_itm_, 'label': crop_label}
         df = df.append(new_row, ignore_index=True)
 
     return df

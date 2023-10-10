@@ -42,7 +42,8 @@ size_per = {
 
 def get_random_alphanumeric_string(length=8):
     letters_and_digits = string.ascii_letters + string.digits
-    result_str = ''.join((random.choice(letters_and_digits) for i in range(length)))
+    result_str = ''.join((random.choice(letters_and_digits)
+                         for i in range(length)))
     return result_str
 
 
@@ -165,9 +166,11 @@ def prepare_distraction_param(distraction, distraction_param, frame_num, res):
             if distraction_param['text'] == random_setting:
                 distraction_param['text'] = get_random_alphanumeric_string()
             if distraction_param['loc'] == random_setting:
-                distraction_param['loc'] = get_random_loc(image_width, image_height)
+                distraction_param['loc'] = get_random_loc(
+                    image_width, image_height)
             if distraction_param['color'] == random_setting:
-                distraction_param['color'] = random.choice(get_supported_colors())
+                distraction_param['color'] = random.choice(
+                    get_supported_colors())
             if distraction_param['thickness'] == random_setting:
                 distraction_param['thickness'] = get_random_font_thickness()
             if distraction_param['fontScale'] == random_setting:
@@ -178,53 +181,68 @@ def prepare_distraction_param(distraction, distraction_param, frame_num, res):
             if distraction_param['text'] == random_setting:
                 distraction_param['text'] = get_random_alphanumeric_string()
                 if distraction_param['loc'] == random_setting:
-                    distraction_param['loc'] = get_random_loc(image_width, image_height)
+                    distraction_param['loc'] = get_random_loc(
+                        image_width, image_height)
                 if distraction_param['color'] == random_setting:
-                    distraction_param['color'] = random.choice(get_supported_colors())
+                    distraction_param['color'] = random.choice(
+                        get_supported_colors())
                 if distraction_param['thickness'] == random_setting:
                     distraction_param['thickness'] = get_random_font_thickness()
                 if distraction_param['fontScale'] == random_setting:
                     distraction_param['fontScale'] = get_random_font_scale()
                 if distraction_param['rolling_dir'] == random_setting:
-                    distraction_param['rolling_dir'] = random.choice(get_supported_rolling_dir())
+                    distraction_param['rolling_dir'] = random.choice(
+                        get_supported_rolling_dir())
                 if distraction_param['rolling_dir'] not in get_supported_rolling_dir():
-                    raise Exception("Unsupported rolling_dir given for rolling text distractor")
+                    raise Exception(
+                        "Unsupported rolling_dir given for rolling text distractor")
         else:
             # get new loc for each frames
             rolling_dir = distraction_param['rolling_dir']
             x, y = distraction_param['loc']
-            x, y = get_updated_loc(rolling_dir, x, y, image_width, image_height)
+            x, y = get_updated_loc(
+                rolling_dir, x, y, image_width, image_height)
             distraction_param['loc'] = (x, y)
 
     if distraction == 'static_shape':
         # Set random values at first frame
         if frame_num == 0:
             if distraction_param['shape'] == random_setting:
-                distraction_param['shape'] = random.choice(get_supported_shapes())
+                distraction_param['shape'] = random.choice(
+                    get_supported_shapes())
             if distraction_param['loc'] == random_setting:
-                distraction_param['loc'] = get_random_loc(image_width, image_height)
+                distraction_param['loc'] = get_random_loc(
+                    image_width, image_height)
             if distraction_param['color'] == random_setting:
-                distraction_param['color'] = random.choice(get_supported_colors())
+                distraction_param['color'] = random.choice(
+                    get_supported_colors())
             if distraction_param['size'] == random_setting:
-                distraction_param['size'] = random.choice(get_supported_shape_sizes())
+                distraction_param['size'] = random.choice(
+                    get_supported_shape_sizes())
 
     if distraction == 'rolling_shape':
         # Set random values at first frame
         if frame_num == 0:
             if distraction_param['shape'] == random_setting:
-                distraction_param['shape'] = random.choice(get_supported_shapes())
+                distraction_param['shape'] = random.choice(
+                    get_supported_shapes())
             if distraction_param['loc'] == random_setting:
-                distraction_param['loc'] = get_random_loc(image_width, image_height)
+                distraction_param['loc'] = get_random_loc(
+                    image_width, image_height)
             if distraction_param['color'] == random_setting:
-                distraction_param['color'] = random.choice(get_supported_colors())
+                distraction_param['color'] = random.choice(
+                    get_supported_colors())
             if distraction_param['size'] == random_setting:
-                distraction_param['size'] = random.choice(get_supported_shape_sizes())
+                distraction_param['size'] = random.choice(
+                    get_supported_shape_sizes())
             if distraction_param['rolling_dir'] == random_setting:
-                distraction_param['rolling_dir'] = random.choice(get_supported_rolling_dir())
+                distraction_param['rolling_dir'] = random.choice(
+                    get_supported_rolling_dir())
         else:
             rolling_dir = distraction_param['rolling_dir']
             x, y = distraction_param['loc']
-            x, y = get_updated_loc(rolling_dir, x, y, image_width, image_height)
+            x, y = get_updated_loc(
+                rolling_dir, x, y, image_width, image_height)
             distraction_param['loc'] = (x, y)
 
     if distraction == 'spontaneous_text':
@@ -233,7 +251,8 @@ def prepare_distraction_param(distraction, distraction_param, frame_num, res):
                 distraction_param['rate'] = get_random_spontaneous_rate()
         if random.random() <= distraction_param['rate']:
             distraction_param['text'] = get_random_alphanumeric_string()
-            distraction_param['loc'] = get_random_loc(image_width, image_height)
+            distraction_param['loc'] = get_random_loc(
+                image_width, image_height)
             distraction_param['color'] = random.choice(get_supported_colors())
             distraction_param['thickness'] = get_random_font_thickness()
             distraction_param['fontScale'] = get_random_font_scale()
@@ -246,9 +265,11 @@ def prepare_distraction_param(distraction, distraction_param, frame_num, res):
                 distraction_param['rate'] = get_random_spontaneous_rate()
         if random.random() <= distraction_param['rate']:
             distraction_param['shape'] = random.choice(get_supported_shapes())
-            distraction_param['loc'] = get_random_loc(image_width, image_height)
+            distraction_param['loc'] = get_random_loc(
+                image_width, image_height)
             distraction_param['color'] = random.choice(get_supported_colors())
-            distraction_param['size'] = random.choice(get_supported_shape_sizes())
+            distraction_param['size'] = random.choice(
+                get_supported_shape_sizes())
         else:
             distraction_param['shape'] = ''
 
@@ -353,8 +374,8 @@ def get_random_distractor():
     return distractor_type, get_distractor_setting_by_type(distractor_type)
 
 
-def apply_distraction_to_videofile(input_video_filename, output_video_filename, distraction=None,
-                                   distraction_param=None, save_intermdt_files=False, test_mode=False):
+def apply_distraction_to_image(input_image_filename, output_image_filename, distraction=None,
+                               distraction_param=None, save_intermdt_files=False, test_mode=False):
     # t = time.time()
 
     if distraction in get_supported_distraction_methods():
@@ -362,47 +383,64 @@ def apply_distraction_to_videofile(input_video_filename, output_video_filename, 
     else:
         raise Exception("Unknown distraction supplied")
 
-    capture = cv2.VideoCapture(input_video_filename)
-    frames_num = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
-    org_height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
-    org_width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
-    res = (org_width, org_height)
-    org_fps = int(capture.get(cv2.CAP_PROP_FPS))
+    # capture = cv2.imageCapture(input_image_filename)
+    # frames_num = int(capture.get(cv2.CAP_PROP_FRAME_COUNT))
+    # org_height = int(capture.get(cv2.CAP_PROP_FRAME_HEIGHT))
+    # org_width = int(capture.get(cv2.CAP_PROP_FRAME_WIDTH))
+    # res = (org_width, org_height)
+    # org_fps = int(capture.get(cv2.CAP_PROP_FPS))
+
+    frame = cv2.imread(input_image_filename)
+    res = (frame.shape[1], frame.shape[0])
 
     if distraction_param is None:
         distraction_param = dict()
     distraction_param['image_width'] = res[0]
     distraction_param['image_height'] = res[1]
 
-    out_images_path = os.path.join(os.path.dirname(output_video_filename),
-                                   os.path.splitext(os.path.basename(output_video_filename))[0],
-                                   )
-    os.makedirs(os.path.dirname(output_video_filename), exist_ok=True)
+    # out_images_path = os.path.join(os.path.dirname(output_image_filename),
+    #                                os.path.splitext(os.path.basename(output_image_filename))[0],
+    #                                )
+    # os.makedirs(os.path.dirname(output_image_filename), exist_ok=True)
     if save_intermdt_files:
-        os.makedirs(out_images_path, exist_ok=True)
+        os.makedirs(os.path.dirname(output_image_filename), exist_ok=True)
+        # os.makedirs(out_images_path, exist_ok=True)
 
-    frames = list()
-    if not test_mode:
-        for i in range(frames_num):
-            capture.grab()
-            success, frame = capture.retrieve()
-            if not success:
-                continue
+    distraction_param = prepare_distraction_param(
+        distraction, distraction_param, 0, res)
+    frame = distraction_func(image=frame, distraction_param=distraction_param)
 
-            distraction_param = prepare_distraction_param(distraction, distraction_param, i, res)
-            frame = distraction_func(image=frame, distraction_param=distraction_param)
+    if save_intermdt_files:
+        out_image_name = os.path.join(output_image_filename)
+        cv2.imwrite(out_image_name, frame, [cv2.IMWRITE_JPEG_QUALITY, 100])
 
-            if save_intermdt_files:
-                out_image_name = os.path.join(out_images_path, "{}.jpg".format(i))
-                # print(f'saving {out_image_name}')
-                cv2.imwrite(out_image_name, frame, [cv2.IMWRITE_JPEG_QUALITY, 100])
+    # frames = list()
+    # if not test_mode:
+    #     for i in range(frames_num):
+    #         capture.grab()
+    #         success, frame = capture.retrieve()
+    #         if not success:
+    #             continue
 
-            frames.append(frame)
+    #         distraction_param = prepare_distraction_param(
+    #             distraction, distraction_param, i, res)
+    #         frame = distraction_func(
+    #             image=frame, distraction_param=distraction_param)
 
-        create_video_from_images(frames, output_video_filename, fps=org_fps, res=res)
+    #         if save_intermdt_files:
+    #             out_image_name = os.path.join(
+    #                 out_images_path, "{}.jpg".format(i))
+    #             # print(f'saving {out_image_name}')
+    #             cv2.imwrite(out_image_name, frame, [
+    #                         cv2.IMWRITE_JPEG_QUALITY, 100])
+
+    #         frames.append(frame)
+
+    #     create_image_from_image(
+    #         frames, output_image_filename, fps=org_fps, res=res)
     # print('Done in', (time.time() - t))
-    # print(output_video_filename)
-    distraction_param['input_file'] = input_video_filename
-    distraction_param['out_file'] = output_video_filename
+    # print(output_image_filename)
+    distraction_param['input_file'] = input_image_filename
+    distraction_param['out_file'] = output_image_filename
     distraction_param['distraction'] = distraction
     return distraction_param

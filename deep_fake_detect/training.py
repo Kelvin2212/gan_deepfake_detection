@@ -94,9 +94,11 @@ def train_model(log_dir=None, train_resume_checkpoint=None):
                               shuffle=True, pin_memory=True)
 
     print(f"Batch_size {model_params['batch_size']}")
-    model = DeepFakeDetectModel(frame_dim=model_params['imsize'], encoder_name=model_params['encoder_name'])    .to(device)
+    model = DeepFakeDetectModel(
+        frame_dim=model_params['imsize'], encoder_name=model_params['encoder_name'])    .to(device)
     criterion = nn.BCEWithLogitsLoss().to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=model_params['learning_rate'])
+    optimizer = torch.optim.Adam(
+        model.parameters(), lr=model_params['learning_rate'])
 
     if model_params['fp16']:
         model, optimizer = amp.initialize(model, optimizer,
@@ -125,17 +127,20 @@ def train_model(log_dir=None, train_resume_checkpoint=None):
 
         model_type = train_resume_checkpoint.split('/')[-2]
         model_train_accuracies, model_train_losses, model_valid_accuracies, \
-        model_valid_losses = load_acc_loss(model, log_dir, model_type)
+            model_valid_losses = load_acc_loss(model, log_dir, model_type)
 
         if len(model_train_accuracies) != start_epoch:
             raise Exception(
                 f'Error! model_train_accuracies = {model_train_accuracies} len is {len(model_train_accuracies)}, expected {start_epoch}')
         if len(model_train_losses) != start_epoch:
-            raise Exception(f'Error! model_train_losses = {model_train_losses}')
+            raise Exception(
+                f'Error! model_train_losses = {model_train_losses}')
         if len(model_valid_accuracies) != start_epoch:
-            raise Exception(f'Error! model_valid_accuracies = {model_valid_accuracies}')
+            raise Exception(
+                f'Error! model_valid_accuracies = {model_valid_accuracies}')
         if len(model_valid_losses) != start_epoch:
-            raise Exception(f'Error! model_valid_losses = {model_valid_losses}')
+            raise Exception(
+                f'Error! model_valid_losses = {model_valid_losses}')
         lowest_v_epoch_loss = min(model_valid_losses)
         highest_v_epoch_acc = max(model_valid_accuracies)
         print(f'Loaded model acc and losses data successfully')
@@ -158,16 +163,16 @@ def train_model(log_dir=None, train_resume_checkpoint=None):
 
         train_valid_use_tqdm = True
         model, t_epoch_accuracy, t_epoch_loss, \
-        t_epoch_fake_loss, t_epoch_real_loss = train_epoch(epoch=e, model=model,
-                                                           criterion=criterion,
-                                                           optimizer=optimizer,
-                                                           data_loader=train_loader,
-                                                           batch_size=model_params['batch_size'],
-                                                           device=device,
-                                                           log_dir=log_dir,
-                                                           sum_writer=train_writer,
-                                                           use_tqdm=train_valid_use_tqdm,
-                                                           model_params=model_params)
+            t_epoch_fake_loss, t_epoch_real_loss = train_epoch(epoch=e, model=model,
+                                                               criterion=criterion,
+                                                               optimizer=optimizer,
+                                                               data_loader=train_loader,
+                                                               batch_size=model_params['batch_size'],
+                                                               device=device,
+                                                               log_dir=log_dir,
+                                                               sum_writer=train_writer,
+                                                               use_tqdm=train_valid_use_tqdm,
+                                                               model_params=model_params)
         model_train_accuracies.append(t_epoch_accuracy)
         model_train_losses.append(t_epoch_loss)
 
@@ -178,23 +183,26 @@ def train_model(log_dir=None, train_resume_checkpoint=None):
         tqdm_train_obj.update()
 
         train_writer.add_scalar('Training: loss per epoch', t_epoch_loss, e)
-        train_writer.add_scalar('Training: fake loss per epoch', t_epoch_fake_loss, e)
-        train_writer.add_scalar('Training: real loss per epoch', t_epoch_real_loss, e)
-        train_writer.add_scalar('Training: accuracy per epoch', t_epoch_accuracy, e)
+        train_writer.add_scalar(
+            'Training: fake loss per epoch', t_epoch_fake_loss, e)
+        train_writer.add_scalar(
+            'Training: real loss per epoch', t_epoch_real_loss, e)
+        train_writer.add_scalar(
+            'Training: accuracy per epoch', t_epoch_accuracy, e)
 
         print_green(tqdm_descr)
         v_epoch_accuracy, v_epoch_loss, v_epoch_fake_loss, \
-        v_epoch_real_loss, all_predicted_labels, \
-        all_ground_truth_labels, all_filenames, \
-        probabilities = valid_epoch(epoch=e, model=model,
-                                    criterion=criterion,
-                                    data_loader=valid_loader,
-                                    batch_size=model_params['batch_size'],
-                                    device=device,
-                                    log_dir=log_dir,
-                                    sum_writer=train_writer,
-                                    use_tqdm=train_valid_use_tqdm,
-                                    model_params=model_params)
+            v_epoch_real_loss, all_predicted_labels, \
+            all_ground_truth_labels, all_filenames, \
+            probabilities = valid_epoch(epoch=e, model=model,
+                                        criterion=criterion,
+                                        data_loader=valid_loader,
+                                        batch_size=model_params['batch_size'],
+                                        device=device,
+                                        log_dir=log_dir,
+                                        sum_writer=train_writer,
+                                        use_tqdm=train_valid_use_tqdm,
+                                        model_params=model_params)
 
         model_valid_accuracies.append(v_epoch_accuracy)
         model_valid_losses.append(v_epoch_loss)
@@ -207,9 +215,12 @@ def train_model(log_dir=None, train_resume_checkpoint=None):
         tqdm_train_obj.update()
 
         train_writer.add_scalar('Validation: loss per epoch', v_epoch_loss, e)
-        train_writer.add_scalar('Validation: fake loss per epoch', v_epoch_fake_loss, e)
-        train_writer.add_scalar('Validation: real loss per epoch', v_epoch_real_loss, e)
-        train_writer.add_scalar('Validation: accuracy per epoch', v_epoch_accuracy, e)
+        train_writer.add_scalar(
+            'Validation: fake loss per epoch', v_epoch_fake_loss, e)
+        train_writer.add_scalar(
+            'Validation: real loss per epoch', v_epoch_real_loss, e)
+        train_writer.add_scalar(
+            'Validation: accuracy per epoch', v_epoch_accuracy, e)
 
         print_green(tqdm_descr)
         print(f'Saving model results at {log_dir}/latest_epoch for epoch {e}')
@@ -228,7 +239,8 @@ def train_model(log_dir=None, train_resume_checkpoint=None):
 
         if v_epoch_loss < lowest_v_epoch_loss:
             lowest_v_epoch_loss = v_epoch_loss
-            print_green(f'Saving best model (low loss) results at {log_dir}/lowest_loss for epoch {e}')
+            print_green(
+                f'Saving best model (low loss) results at {log_dir}/lowest_loss for epoch {e}')
             if model_params['fp16']:
                 amp_dict = amp.state_dict()
             else:
@@ -244,7 +256,8 @@ def train_model(log_dir=None, train_resume_checkpoint=None):
 
         if highest_v_epoch_acc < v_epoch_accuracy:
             highest_v_epoch_acc = v_epoch_accuracy
-            print_green(f'Saving best model (high acc) results at {log_dir}/highest_acc for epoch {e}')
+            print_green(
+                f'Saving best model (high acc) results at {log_dir}/highest_acc for epoch {e}')
             if model_params['fp16']:
                 amp_dict = amp.state_dict()
             else:
@@ -276,7 +289,8 @@ def train_epoch(epoch=None, model=None, criterion=None, optimizer=None, data_loa
     if use_tqdm:
         tqdm_b_descr_format = "Training. Batch# {:05} Acc={:02.4f}%|Loss Total={:.8f} Fake={:.8f} Real={:.8f}"
         g_minibatch = global_minibatch_number(epoch, 0, train_loader_len)
-        tqdm_b_descr = tqdm_b_descr_format.format(g_minibatch, 0, float('inf'), float('inf'), float('inf'))
+        tqdm_b_descr = tqdm_b_descr_format.format(
+            g_minibatch, 0, float('inf'), float('inf'), float('inf'))
         tqdm_b_obj = tqdm(data_loader, desc=tqdm_b_descr)
         train_data_iter = tqdm_b_obj
 
@@ -367,7 +381,8 @@ def valid_epoch(epoch=None, model=None, criterion=None, data_loader=None, batch_
     if use_tqdm:
         tqdm_b_descr_format = "Validation. Batch# {:05} Acc={:02.4f}%|Loss Total={:.8f} Fake={:.8f} Real={:.8f}"
         g_minibatch = global_minibatch_number(epoch, 0, valid_loader_len)
-        tqdm_b_descr = tqdm_b_descr_format.format(g_minibatch, 0, float('inf'), float('inf'), float('inf'))
+        tqdm_b_descr = tqdm_b_descr_format.format(
+            g_minibatch, 0, float('inf'), float('inf'), float('inf'))
         tqdm_b_obj = tqdm(data_loader, desc=tqdm_b_descr)
         valid_data_iter = tqdm_b_obj
 
@@ -379,7 +394,8 @@ def valid_epoch(epoch=None, model=None, criterion=None, data_loader=None, batch_
             labels = samples['label'].to(device).unsqueeze(1)
             batch_size = labels.shape[0]
             for i in range(batch_size):
-                all_filenames.append(str(samples['video_id'][i].item()) + '__' + str(samples['frame'][i]))
+                all_filenames.append(
+                    str(samples['image_id'][i].item()) + '__' + str(samples['frame'][i]))
 
             output = model(frames)
             labels = labels.type_as(output)
@@ -398,7 +414,8 @@ def valid_epoch(epoch=None, model=None, criterion=None, data_loader=None, batch_
             fake_loss_val = 0 if fake_loss == 0 else fake_loss.item()
 
             predicted = get_predictions(output).to('cpu').detach().numpy()
-            class_probability = get_probability(output).to('cpu').detach().numpy()
+            class_probability = get_probability(
+                output).to('cpu').detach().numpy()
 
             # print(f'output ={output}')
             # print(f'class_probability ={class_probability}')
