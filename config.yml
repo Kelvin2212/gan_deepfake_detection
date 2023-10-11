@@ -50,7 +50,7 @@ features:
     json_filename: "/home/therock/data2/data_workset/deepfake_data/fdf/cc-by-nc-sa-2/fdf.json"
     crops_path: "/home/therock/data2/data_workset/deepfake_data/fdf/cc-by-nc-sa-2/128_crops"
   ffhq:
-    json_filename: "/content/drive/MyDrive/InputTraining/jsonfilename/"
+    json_filename: "/content/drive/MyDrive/InputTraining/jsonfilename/ffhq-dataset-v2.json"
     crops_path: "/content/drive/MyDrive/InputTraining/cropspath/"
   mri_dataset_real_train_csv: "mri_real_train_dataset.csv"
   mri_dataset_fake_train_csv: "mri_fake_train_dataset.csv"
